@@ -46,7 +46,7 @@ h6 {
 }
 
 input {
-    @apply w-full rounded-lg border outline-none p-4 focus:border-textPrimary;
+    @apply w-full rounded-lg border outline-none p-4 focus:border-textPrimary disabled:opacity-50;
 }
 
 label {
@@ -58,7 +58,7 @@ label {
 }
 
 button {
-    @apply lg:hover:brightness-90 lg:active:scale-[0.97];
+    @apply lg:hover:brightness-90 active:scale-[0.97];
 }
 
 .btn {

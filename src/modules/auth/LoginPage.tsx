@@ -1,16 +1,24 @@
 import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { SpinLoading } from "@/base";
 
 const LoginPage: React.FC = () => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [signupMode, setSignupMode] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        setLoading(true);
         if (signupMode) {
             // sign up
         } else {
-            // login
+            await login(email, password);
         }
+        setLoading(false);
     };
 
     return (
@@ -27,9 +35,11 @@ const LoginPage: React.FC = () => {
                         id="email"
                         name="email"
                         type="email"
+                        onChange={(e) => setEmail(e.currentTarget.value)}
                         required
                         placeholder="e.g. john@example.com"
                         autoComplete="current-email"
+                        disabled={loading}
                     />
                 </div>
                 <div className="input-controller">
@@ -38,9 +48,11 @@ const LoginPage: React.FC = () => {
                         id="password"
                         name="password"
                         type="password"
+                        onChange={(e) => setPassword(e.currentTarget.value)}
                         required
                         placeholder="Enter your password"
                         autoComplete="current-password"
+                        disabled={loading}
                     />
                 </div>
                 {signupMode && (
@@ -55,10 +67,16 @@ const LoginPage: React.FC = () => {
                             required
                             placeholder="Reenter your password"
                             autoComplete="false"
+                            disabled={loading}
                         />
                     </div>
                 )}
-                <button type="submit" className="btn-primary btn-lg">
+                <button
+                    type="submit"
+                    className="btn-primary btn-lg"
+                    disabled={loading}
+                >
+                    {loading && <SpinLoading />}
                     {signupMode ? "Sign Up" : "Login"}
                 </button>
             </form>

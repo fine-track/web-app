@@ -1,24 +1,39 @@
 import { useState, createContext, useEffect } from "react";
+import type { User } from "@/types";
 import { SpinLoading } from "@/base";
 import { USER_SESSION_KEY } from "@/configs";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
-export const AuthContext = createContext({
+type TAuthContext = {
+    user: User | null;
+    subscription: null;
+    login: (email: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
+    getTokenSilently: () => Promise<string | null>;
+};
+
+const authClient = axios.create({
+    baseURL: import.meta.env.VITE_AUTH_API,
+});
+
+export const AuthContext = createContext<TAuthContext>({
     user: null,
     subscription: null,
     login: async () => {},
     logout: async () => {},
-    getTokenSilently: async () => {},
+    getTokenSilently: async () => null,
 });
 
 const AuthProvider: React.FC<{
     children?: React.ReactNode;
 }> = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
     const [subscription, setSubscription] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         silentLogin();
@@ -37,15 +52,15 @@ const AuthProvider: React.FC<{
             setLoading(true);
             setSubscription(null);
 
-            const session = sessionStorage.getItem(USER_SESSION_KEY);
-            if (!session) {
+            const accessToken = await getTokenSilently();
+            if (!accessToken) {
                 setUser(null);
                 return;
             }
-            const tokenData = JSON.parse(session);
-            if (!tokenData.refreshToken) {
-                setUser(null);
-            }
+            const profileRes = await authClient.get("/profile", {
+                headers: { Authorization: "Bearer " + accessToken },
+            });
+            setUser(profileRes.data.data);
         } catch (err) {
             setUser(null);
         } finally {
@@ -53,11 +68,40 @@ const AuthProvider: React.FC<{
         }
     };
 
-    const login = async () => {};
+    const login = async (email: string, password: string) => {
+        try {
+            const res = await authClient.post("/login", {
+                email,
+                password,
+            });
+            const { access_token, refresh_token } = res.data.data;
+            sessionStorage.setItem(USER_SESSION_KEY, refresh_token);
+            const userRes = await authClient.get("/profile", {
+                headers: { Authorization: "Bearer " + access_token },
+            });
+            setUser(userRes.data.data);
+            navigate("/", { preventScrollReset: false, replace: true });
+        } catch (err: any) {
+            console.error(err.response || err);
+        }
+    };
 
     const logout = async () => {};
 
-    const getTokenSilently = async () => {};
+    const getTokenSilently = async () => {
+        try {
+            const refreshToken = sessionStorage.getItem(USER_SESSION_KEY);
+            if (!refreshToken) return null;
+            const res = await authClient.post("/get-access-token", undefined, {
+                headers: { Authorization: "Bearer " + refreshToken },
+            });
+            const { access_token } = res.data.data;
+            return access_token as string;
+        } catch (err: any) {
+            console.error(err.response);
+            return null;
+        }
+    };
 
     const value = {
         user,
