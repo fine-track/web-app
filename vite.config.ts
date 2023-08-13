@@ -9,4 +9,8 @@ export default defineConfig({
             "@": "/src",
         },
     },
+    server: {
+        host: "localhost",
+        port: 3000,
+    },
 });
