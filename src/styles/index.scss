@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    font-size: 16px;
+    height: -webkit-fill-available;
+}
+
+*,
+*::after,
+*::before {
+    font-family: inherit;
+}
+
+body {
+    font-family:
+        "Inter",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        Roboto,
+        "Open Sans",
+        "Helvetica Neue",
+        sans-serif;
+    @apply text-textSecondary font-light;
+}
+
+h1 {
+    @apply text-4xl text-textPrimary;
+}
+h2 {
+    @apply text-3xl text-textPrimary;
+}
+h3 {
+    @apply text-2xl font-medium text-textPrimary;
+}
+h4 {
+    @apply text-xl font-medium text-textPrimary;
+}
+h5 {
+    @apply text-lg font-medium text-textPrimary;
+}
+h6 {
+    @apply text-base font-bold text-textPrimary;
+}
+
+input {
+    @apply w-full rounded-lg border outline-none p-4 focus:border-textPrimary;
+}
+
+label {
+    @apply text-sm;
+}
+
+.input-controller {
+    @apply flex flex-col justify-start items-start gap-1 text-textPrimary;
+}
+
+button {
+    @apply lg:hover:brightness-90 lg:active:scale-[0.97];
+}
+
+.btn {
+    @apply px-4 py-2 rounded-lg text-base flex flex-row justify-center items-center gap-2;
+}
+
+.btn-primary {
+    @extend .btn;
+    @apply bg-textSecondary text-white;
+}
+
+.btn-secondary {
+    @extend .btn;
+    @apply bg-gray-200 text-textPrimary;
+}
+
+.btn-sm {
+    @extend .btn;
+    @apply p-2 py-1 text-sm;
+}
+
+.btn-lg {
+    @extend .btn;
+    @apply px-6 py-4 text-base;
+}
