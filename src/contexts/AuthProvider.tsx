@@ -3,7 +3,8 @@ import type { User } from "@/types";
 import { SpinLoading } from "@/base";
 import { USER_SESSION_KEY } from "@/configs";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import { authClient } from "@/utils/http";
+import { getTokenSilently } from "@/utils/auth";
 
 type TAuthContext = {
     user: User | null;
@@ -11,7 +12,6 @@ type TAuthContext = {
     login: (email: string, password: string) => Promise<void>;
     register: (payload: RegisterUserPayload) => Promise<void>;
     logout: () => Promise<void>;
-    getTokenSilently: () => Promise<string | null>;
 };
 
 type RegisterUserPayload = {
@@ -21,17 +21,12 @@ type RegisterUserPayload = {
     confirmPass: string;
 };
 
-const authClient = axios.create({
-    baseURL: import.meta.env.VITE_AUTH_API,
-});
-
 export const AuthContext = createContext<TAuthContext>({
     user: null,
     subscription: null,
     login: async () => {},
     register: async () => {},
     logout: async () => {},
-    getTokenSilently: async () => null,
 });
 
 const AuthProvider: React.FC<{
@@ -95,20 +90,19 @@ const AuthProvider: React.FC<{
         }
     };
 
-    const logout = async () => {};
-
-    const getTokenSilently = async () => {
+    const logout = async () => {
         try {
-            const refreshToken = sessionStorage.getItem(USER_SESSION_KEY);
-            if (!refreshToken) return null;
-            const res = await authClient.post("/get-access-token", undefined, {
-                headers: { Authorization: "Bearer " + refreshToken },
-            });
-            const { access_token } = res.data.data;
-            return access_token as string;
-        } catch (err: any) {
-            console.error(err.response);
-            return null;
+            const accessToken = await getTokenSilently();
+            if (accessToken) {
+                await authClient.post("/logout", undefined, {
+                    headers: { Authorization: "Bearer " + accessToken },
+                });
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setUser(null);
+            navigate("/login");
         }
     };
 
@@ -137,7 +131,6 @@ const AuthProvider: React.FC<{
         login,
         register,
         logout,
-        getTokenSilently,
     };
 
     if (loading)
