@@ -5,16 +5,18 @@ import { SpinLoading } from "@/base";
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPass, setConfirmPass] = useState("");
+    const [fullname, setFullname] = useState("");
     const [signupMode, setSignupMode] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, register } = useAuth();
 
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         if (signupMode) {
-            // sign up
+            await register({ email, fullname, password, confirmPass });
         } else {
             await login(email, password);
         }
@@ -56,20 +58,42 @@ const LoginPage: React.FC = () => {
                     />
                 </div>
                 {signupMode && (
-                    <div className="input-controller">
-                        <label htmlFor="confirm-password">
-                            Confirm Password
-                        </label>
-                        <input
-                            id="confirm-password"
-                            name="password"
-                            type="password"
-                            required
-                            placeholder="Reenter your password"
-                            autoComplete="false"
-                            disabled={loading}
-                        />
-                    </div>
+                    <>
+                        <div className="input-controller">
+                            <label htmlFor="confirm-password">
+                                Confirm Password
+                            </label>
+                            <input
+                                id="confirm-password"
+                                name="password"
+                                type="password"
+                                required
+                                value={confirmPass}
+                                onChange={(e) =>
+                                    setConfirmPass(e.currentTarget.value)
+                                }
+                                placeholder="Reenter your password"
+                                autoComplete="false"
+                                disabled={loading}
+                            />
+                        </div>
+                        <div className="input-controller">
+                            <label htmlFor="fullname">Fullname</label>
+                            <input
+                                id="fullname"
+                                name="fullname"
+                                type="text"
+                                required
+                                value={fullname}
+                                onChange={(e) =>
+                                    setFullname(e.currentTarget.value)
+                                }
+                                placeholder="e.g. John Doe"
+                                autoComplete="name"
+                                disabled={loading}
+                            />
+                        </div>
+                    </>
                 )}
                 <button
                     type="submit"

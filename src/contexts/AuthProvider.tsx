@@ -9,8 +9,16 @@ type TAuthContext = {
     user: User | null;
     subscription: null;
     login: (email: string, password: string) => Promise<void>;
+    register: (payload: RegisterUserPayload) => Promise<void>;
     logout: () => Promise<void>;
     getTokenSilently: () => Promise<string | null>;
+};
+
+type RegisterUserPayload = {
+    fullname: string;
+    email: string;
+    password: string;
+    confirmPass: string;
 };
 
 const authClient = axios.create({
@@ -21,6 +29,7 @@ export const AuthContext = createContext<TAuthContext>({
     user: null,
     subscription: null,
     login: async () => {},
+    register: async () => {},
     logout: async () => {},
     getTokenSilently: async () => null,
 });
@@ -103,10 +112,30 @@ const AuthProvider: React.FC<{
         }
     };
 
+    const register = async ({
+        fullname,
+        email,
+        password,
+        confirmPass,
+    }: RegisterUserPayload) => {
+        try {
+            await authClient.post("/register", {
+                fullname,
+                email,
+                password,
+                confirm_password: confirmPass,
+            });
+            window.location.reload();
+        } catch (err: any) {
+            console.error(err.response || err);
+        }
+    };
+
     const value = {
         user,
         subscription,
         login,
+        register,
         logout,
         getTokenSilently,
     };

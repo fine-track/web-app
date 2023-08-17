@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "@/App";
 import LoginPage from "@/modules/auth/LoginPage";
 import LogoutPage from "@/modules/auth/LogoutPage";
+import Dashboard from "@/modules/dashboard/Dashboard";
 
 import "@/styles/index.scss";
 
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
             {
                 path: "/logout",
                 element: <LogoutPage />,
+            },
+            {
+                path: "/dashboard",
+                element: <Dashboard />,
             },
         ],
     },
