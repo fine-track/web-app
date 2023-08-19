@@ -40,34 +40,38 @@ const AuthProvider: React.FC<{
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (
+            location.pathname.includes("/login") ||
+            location.pathname.includes("/logout")
+        ) {
+            setLoading(false);
+            return;
+        }
         silentLogin();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useEffect(() => {
-        if (loading || user) return;
-        if (location.pathname === "/login") return;
-        if (location.pathname === "/logout") return;
-        window.location.href = "/login";
-    }, [user, loading, location]);
-
     const silentLogin = async () => {
+        let foundUser: User | null = null;
         try {
             setLoading(true);
             setSubscription(null);
 
             const accessToken = await getTokenSilently();
             if (!accessToken) {
-                setUser(null);
-                return;
+                foundUser = null;
+            } else {
+                const profileRes = await authClient.get("/profile", {
+                    headers: { Authorization: "Bearer " + accessToken },
+                });
+                foundUser = profileRes.data.data;
             }
-            const profileRes = await authClient.get("/profile", {
-                headers: { Authorization: "Bearer " + accessToken },
-            });
-            setUser(profileRes.data.data);
         } catch (err) {
-            setUser(null);
+            sessionStorage.removeItem(USER_SESSION_KEY);
+            foundUser = null;
         } finally {
+            setUser(foundUser);
+            if (!foundUser) navigate("/login");
             setLoading(false);
         }
     };
@@ -84,7 +88,7 @@ const AuthProvider: React.FC<{
                 headers: { Authorization: "Bearer " + access_token },
             });
             setUser(userRes.data.data);
-            navigate("/", { preventScrollReset: false, replace: true });
+            navigate("/journals", { preventScrollReset: false, replace: true });
         } catch (err: any) {
             console.error(err.response || err);
         }
